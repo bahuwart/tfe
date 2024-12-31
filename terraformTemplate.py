@@ -1,48 +1,39 @@
-import pandas as pd
-import os
+import json
 
-# Charger le fichier Excel
-def load_excel(file_path):
-    return pd.read_excel(file_path)
+# Charger le fichier JSON
+def load_json(file_path):
+    with open(file_path, "r") as json_file:
+        return json.load(json_file)
 
-# Générer le fichier Terraform pour chaque utilisateur
-def generate_terraform_resources(data, output_file):
-    with open(output_file, "w") as tf_file:
+# Extraire les informations nécessaires d'un utilisateur
+def get_user_details(user):
+    username = user["Username"]
+    first_name = user["Name"]
+    last_name = user["Surname"]
+    group = user["Group"]
+    ip_addresses = [value for key, value in user.items() if key.startswith("IP_Address")]
+    return username, first_name, last_name, group, ip_addresses
 
-        tf_file.write(
-"""
-variable "admin_login" {
-type = string
-}
+# Générer la ressource Terraform pour une adresse IP spécifique
+def generate_terraform_resource(username, first_name, last_name, group, ip_address, ip_suffix):
+    ip_gateway = ".".join(ip_address.split(".")[:-1]) + ".1"
 
-variable "admin_password" {
-type = string
-}
-"""
-            )
+    # Déterminer le groupe (et le tag correspondant)
+    if group.lower() == "etudiants":
+        tag = 10
+        vmid = f"10{ip_suffix}"
+    elif group.lower() == "professeurs":
+        tag = 20
+        vmid = f"20{ip_suffix}"
+    else:
+        return ""  # Ignorer les groupes non pris en charge
 
-        for _, row in data.iterrows():
-            username = row["Username"]
-            first_name = row["Name"]
-            last_name = row["Surname"]
-            mac_address = row["MAC_Address"]
-            group = row["Group"]
+    # Nom de la ressource avec un suffixe basé sur l'IP
+    resource_name = f"{username}-VM{vmid}"
 
-            # Extraire les deux derniers chiffres de l'adresse MAC
-            mac_suffix = mac_address.split(":")[-1]
-
-            if group.lower() == "etudiants":
-                tag = 10
-                vmid = f"10{mac_suffix}"
-            elif group.lower() == "professeurs":
-                tag = 20
-                vmid = f"20{mac_suffix}"
-            else:
-                continue  # Ignorer les groupes non pris en charge
-
-            resource = f"""
-resource "proxmox_vm_qemu" "{username}" {{
-    name        = "{username}-VM"
+    resource = f"""
+resource "proxmox_vm_qemu" "{resource_name}" {{
+    name        = "{username}-VM{vmid}"
     desc        = "Ubuntu virtual machine of {first_name} {last_name}"
     vmid        = "{vmid}"
     target_node = "pve"
@@ -77,7 +68,6 @@ resource "proxmox_vm_qemu" "{username}" {{
         model  = "virtio"
         bridge = "vmbr3"
         tag    = {tag}
-        macaddr = "{mac_address}"
     }}
 
     serial {{
@@ -86,24 +76,49 @@ resource "proxmox_vm_qemu" "{username}" {{
     }}
     ciuser = var.admin_login
     cipassword = var.admin_password
-    ipconfig0   = "ip=dhcp"
+    ipconfig0   = "ip={ip_address}/24,gw={ip_gateway}"
     vm_state = "running"
 }}
 """
-            tf_file.write(resource)
-            tf_file.write("\n")  # Séparation entre les ressources
+    return resource
 
-# Chemin vers le fichier Excel
-excel_file = "tfe.xlsx"
+# Générer les ressources Terraform pour tous les utilisateurs
+def generate_terraform_resources(data, output_file):
+    with open(output_file, "w") as tf_file:
+
+        tf_file.write(
+"""
+variable "admin_login" {
+type = string
+}
+
+variable "admin_password" {
+type = string
+}
+"""
+            )
+
+        # Pour chaque utilisateur
+        for user in data:
+            username, first_name, last_name, group, ip_addresses = get_user_details(user)
+
+            # Traiter chaque adresse IP
+            for ip_address in ip_addresses:
+                if ip_address:  # Si l'adresse IP est valide
+                    ip_suffix = ip_address.split(".")[-1]
+                    resource = generate_terraform_resource(username, first_name, last_name, group, ip_address, ip_suffix)
+                    tf_file.write(resource)
+                    tf_file.write("\n")  # Séparation entre les ressources
+
+# Chemin vers le fichier JSON
+json_file = "users_data.json"
 output_tf_file = "deployement.tf"
 
 # Charger les données
 try:
-    data = load_excel(excel_file)
-    # Filtrer uniquement les colonnes nécessaires
-    filtered_data = data[["Username", "Name", "Surname", "Group", "MAC_Address"]]
+    data = load_json(json_file)
     # Générer le fichier Terraform
-    generate_terraform_resources(filtered_data, output_tf_file)
+    generate_terraform_resources(data, output_tf_file)
     print(f"Les ressources Terraform ont été générées dans le fichier {output_tf_file}")
 except Exception as e:
     print(f"Erreur : {e}")

@@ -1,34 +1,19 @@
 [
     {
-        "Username": "mlavoine",
         "Name": "Marc",
         "Surname": "Lavoine",
-        "Password": "Welcom@1112a.",
         "Group": "professeurs",
-        "IP_Address": "10.0.20.11"
+        "Username": "mlavoine",
+        "Password": "Mo3s?DrSMnOz",
+        "IP_Address": "10.0.20.232"
     },
     {
-        "Username": "bhuwart",
         "Name": "Basil",
         "Surname": "Huwart",
-        "Password": "Welcom@1112a.",
         "Group": "etudiants",
-        "IP_Address": "10.0.10.11"
-    },
-    {
-        "Username": "jdoe",
-        "Name": "John",
-        "Surname": "Doe",
-        "Password": "Welcom@1112a.",
-        "Group": "professeurs",
-        "IP_Address": "10.0.20.12"
-    },
-    {
-        "Username": "pchaude",
-        "Name": "Patate",
-        "Surname": "Chaude",
-        "Password": "Welcom@1112a.",
-        "Group": "etudiants",
-        "IP_Address": "10.0.10.12"
+        "Username": "bhuwart",
+        "Password": "cj0SUd0s7e?6",
+        "IP_Address": "10.0.10.23",
+        "IP_Address2": "10.0.10.241"
     }
 ]

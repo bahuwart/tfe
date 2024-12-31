@@ -10,7 +10,9 @@ ANSIBLE_PATH = "/root/ansible-controller/inventory.ini"  # Chemin cible sur la m
 # Chemin du fichier JSON avec les données des utilisateurs
 USER_DATA_FILE = "C:\\tfe\\users_data.json"  # Chemin du fichier JSON avec les données des utilisateurs
 
-def generate_inventory():
+import json
+
+def generate_inventory(USER_DATA_FILE):
     # Charger les données des utilisateurs depuis le fichier JSON
     try:
         with open(USER_DATA_FILE, 'r') as f:
@@ -20,22 +22,23 @@ def generate_inventory():
         return
 
     # Liste pour stocker les lignes du fichier inventory
-    inventory_lines = ["[users]"]
+    inventory_lines = ["[VMs]"]
 
     for user in users_data:
         username = user['Username']
-        mac_address = user['MAC_Address']
-        
-        # Déterminer l'adresse IP en fonction de l'adresse MAC
-        if mac_address.startswith("00:11:11:11:11"):
-            ip_address = f"10.0.10.{mac_address.split(':')[-1]}"
-        elif mac_address.startswith("00:22:22:22:22"):
-            ip_address = f"10.0.20.{mac_address.split(':')[-1]}"
-        else:
-            continue  # Si l'adresse MAC ne correspond à aucune des règles, on passe à l'utilisateur suivant
-        
-        # Ajouter la ligne correspondante au fichier inventory
-        inventory_lines.append(f"{username} ansible_host={ip_address} ansible_user=tfe ansible_password=password")
+        group = user['Group']
+
+        # Extraire toutes les adresses IP en recherchant les clés qui commencent par "IP_Address"
+        ip_addresses = [value for key, value in user.items() if key.startswith("IP_Address")]
+
+        # Ajouter une ligne pour chaque adresse IP
+        for ip_address in ip_addresses:
+            # On peut ici ajouter des traitements supplémentaires pour gérer différentes plages d'IP
+            # Pour cet exemple, je vais simplement créer des noms de VM avec les suffixes des adresses IP
+            if group.lower() == 'etudiants':
+                inventory_lines.append(f"{username}-VM{ip_address.split('.')[-2]}{ip_address.split('.')[-1]} ansible_host={ip_address} ansible_user=tfe ansible_password=password username={username}")
+            elif group.lower() == 'professeurs':
+                inventory_lines.append(f"{username}-VM{ip_address.split('.')[-2]}{ip_address.split('.')[-1]} ansible_host={ip_address} ansible_user=tfe ansible_password=password username={username}")
 
     # Sauvegarder le fichier inventory.ini
     inventory_content = "\n".join(inventory_lines)
@@ -47,9 +50,10 @@ def generate_inventory():
     print(f"Le fichier inventory.ini a été généré localement.")
     return "inventory.ini"
 
+
 def update_inventory():
     # Générer le fichier inventory.ini
-    inventory_file = generate_inventory()
+    inventory_file = generate_inventory(USER_DATA_FILE)
     
     if inventory_file:
         try:
@@ -106,3 +110,5 @@ def execute_playbook(update_console):
 
     finally:
         ssh.close()  # Toujours fermer la connexion SSH
+
+update_inventory()
