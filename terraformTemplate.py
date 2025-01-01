@@ -15,6 +15,8 @@ config = load_config(CONFIG_FILE)
 
 USERS_DATA_FILE = config["USER_DATA_FILE"]
 TERRAFORM_OUTPUT_FILE = config["TERRAFORM_OUTPUT_FILE"]
+STUDENTS_TEMPLATE = config["STUDENTS_TEMPLATE"]
+TEACHERS_TEMPLATE = config["TEACHERS_TEMPLATE"]
 
 def load_json(file_path):
     with open(file_path, "r") as users:
@@ -37,9 +39,11 @@ def generate_terraform_resource(username, first_name, last_name, group, ip_addre
     if group.lower() == "etudiants":
         tag = 10
         vmid = f"10{ip_suffix}"
+        template = STUDENTS_TEMPLATE
     elif group.lower() == "professeurs":
         tag = 20
         vmid = f"20{ip_suffix}"
+        template = TEACHERS_TEMPLATE
     else:
         return ""  # Ignorer les groupes non pris en charge
 
@@ -54,7 +58,7 @@ resource "proxmox_vm_qemu" "{resource_name}" {{
     target_node = "pve"
 
     agent   = 0
-    clone   = "linux-cloud"
+    clone   = "{template}"
     cores   = 1
     sockets = 1
     cpu     = "host"

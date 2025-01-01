@@ -8,13 +8,16 @@
     "EXPORT_AD_SCRIPT" : "C:\\tfe\\exportAD.ps1",
     "DELETE_FROM_AD_SCRIPT" : "C:\\tfe\\deleteFromAD.ps1",
     "TERRAFORM_TEMPLATE_SCRIPT" : "C:\\tfe\\terraformTemplate.py",
-    "TERRAFORM_DIRECTORY" : "C:\\tfe",
+    "APP_DIRECTORY" : "C:\\tfe",
     "TERRAFORM_OUTPUT_FILE" : "C:\\tfe\\deployement.tf",
     "OU_PATH" : "OU=utilisateurs,DC=TFE,DC=lab",
     "AD_DOMAIN_NAME" : "tfe.lab",
     "VM_NUMBERS" : {
-        "etudiants" : 3,
+        "etudiants" : 242,
         "professeurs" : 1
     },
-    "EXCEL_FILE_PATH" : "C:\\tfe\\tfe.xlsx"
+    "EXCEL_FILE_PATH" : "C:\\tfe\\tfe.xlsx",
+    "TEACHERS_TEMPLATE" : "linux-cloud2",
+    "STUDENTS_TEMPLATE" : "linux-cloud",
+    "DELETE_USERS_FILE" : "C:\\tfe\\delete.xlsx"
 }

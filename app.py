@@ -21,7 +21,9 @@ IMPORT_XLSX_SCRIPT = config["IMPORT_XLSX_SCRIPT"]
 EXPORT_AD_SCRIPT = config["EXPORT_AD_SCRIPT"]
 DELETE_FROM_AD_SCRIPT = config["DELETE_FROM_AD_SCRIPT"]
 TERRAFORM_TEMPLATE_SCRIPT = config["TERRAFORM_TEMPLATE_SCRIPT"]
-TERRAFORM_DIRECTORY = config["TERRAFORM_DIRECTORY"]  # Répertoire contenant les fichiers Terraform
+APP_DIRECTORY = config["APP_DIRECTORY"]
+EXCEL_FILE_PATH = config["EXCEL_FILE_PATH"]
+DELETE_USERS_FILE = config["DELETE_USERS_FILE"]
 
 # Fonction pour exécuter un script et afficher les sorties en temps réel
 def execute_script(command):
@@ -62,20 +64,19 @@ def delete_from_ad():
 def terraform_apply():
     update_status("Lancement de la création des VM...")
     command = f"terraform apply -auto-approve"
-    result = execute_script(f"cd {TERRAFORM_DIRECTORY} && {command}")
+    result = execute_script(f"cd {APP_DIRECTORY} && {command}")
     if "Error" in result:
         update_status("Échec de la création des VM.")
         messagebox.showerror("Erreur", f"Échec de terraform apply : {result}")
         return
     update_status("Les VM ont été créées avec succès !")
     messagebox.showinfo("Succès", "Les VM ont été créées avec succès !")
-    show_ansible_button()  # Afficher le bouton pour Ansible
 
 # Fonction pour appliquer Terraform
 def terraform_destroy():
     update_status("Suppression des VM...")
     command = f"terraform destroy -auto-approve"
-    result = execute_script(f"cd {TERRAFORM_DIRECTORY} && {command}")
+    result = execute_script(f"cd {APP_DIRECTORY} && {command}")
     if "Error" in result:
         update_status("Échec de la suppression des VM.")
         messagebox.showerror("Erreur", f"Échec de terraform destroy : {result}")
@@ -112,7 +113,6 @@ def process_workflow():
     update_status("Les templates ont été créés avec succès.")
 
     update_status("Tous les scripts ont été exécutés avec succès.")
-    show_terraform_button()
 
 # Fonction pour exécuter Ansible (update_inventory et execute_playbook)
 def run_ansible():
@@ -144,18 +144,11 @@ def update_console(message, error=False):
         console_text.tag_config("error", foreground="red")
     root.update_idletasks()
 
-def show_terraform_button():
-    terraform_button.pack(side="left", padx=5)
-
-def show_ansible_button():
-    ansible_button.pack(side="left", padx=5)
-
 def select_file():
     file_path = filedialog.askopenfilename(filetypes=[("Excel Files", "*.xlsx")])
     if file_path:
         try:
-            # Définir le nouveau chemin avec le nom de fichier tfe.xlsx
-            dest_path = os.path.join("C:\\tfe", "tfe.xlsx")
+            dest_path = EXCEL_FILE_PATH
             
             # Vérifier si le fichier existe déjà à cet emplacement et le supprimer si nécessaire
             if os.path.exists(dest_path):
@@ -170,13 +163,32 @@ def select_file():
             update_status("Erreur lors de l'ajout du fichier : " + str(e))
             messagebox.showerror("Erreur", f"Erreur lors de l'ajout du fichier : {str(e)}")
 
+def delete_selected_users():
+    file_path = filedialog.askopenfilename(filetypes=[("Excel Files", "*.xlsx")])
+    if file_path:
+        try:
+            dest_path = DELETE_USERS_FILE
+            
+            # Vérifier si le fichier existe déjà à cet emplacement et le supprimer si nécessaire
+            if os.path.exists(dest_path):
+                os.remove(dest_path)
+            
+            # Déplacer et renommer le fichier
+            os.replace(file_path, dest_path)
+            
+            update_status(f"Fichier {os.path.basename(file_path)} ajouté et renommé en delete.xlsx avec succès.")
+            process_workflow()
+        except Exception as e:
+            update_status("Erreur lors de l'ajout du fichier : " + str(e))
+            messagebox.showerror("Erreur", f"Erreur lors de l'ajout du fichier : {str(e)}")
+
             
 # Interface graphique principale
 root = tk.Tk()
 root.title("Gestion des Scripts")
 
 # Dimensions de la fenêtre
-root.geometry("750x600")
+root.geometry("750x700")
 
 # Widgets
 label = tk.Label(root, text="Sélectionnez un fichier Excel à traiter :", font=("Arial", 14))
@@ -194,23 +206,37 @@ console_label.pack(pady=5)
 console_text = tk.Text(root, wrap="word", height=10, font=("Courier", 10))
 console_text.pack(fill="both", expand=True, padx=10, pady=5)
 
-# Créer un conteneur pour les boutons
+# Créer un conteneur pour les boutons principaux
 frame_buttons = tk.Frame(root)
-frame_buttons.pack(side="bottom", fill="x", padx=10, pady=10)
+frame_buttons.pack(side="top", fill="x", padx=10, pady=10)
 
-# Bouton Quitter (toujours visible, à gauche)
+# Ajouter les boutons principaux
 exit_button = tk.Button(frame_buttons, text="Quitter", command=root.quit, font=("Arial", 12), bg="red", fg="white")
 exit_button.pack(side="left", padx=5)
 
-# Boutons Terraform et Ansible (qui apparaîtront progressivement)
 terraform_button = tk.Button(frame_buttons, text="Lancer la création des VM", command=terraform_apply, font=("Arial", 12), bg="green", fg="white")
-terraform_button.pack_forget()  # Masqué au départ
+terraform_button.pack(side="left", padx=5)
 
 ansible_button = tk.Button(frame_buttons, text="Lancer la configuration des VM", command=run_ansible, font=("Arial", 12), bg="orange", fg="white")
-ansible_button.pack_forget()  # Masqué au départ
+ansible_button.pack(side="left", padx=5)
 
 delete_button = tk.Button(frame_buttons, text="Supprimer VM & utilisateurs", command=delete_from_ad, font=("Arial", 12), bg="blue", fg="white")
 delete_button.pack(side="right", padx=5)
+
+# Frame spécifique pour le bouton "Supprimer certains utilisateurs"
+frame_delete_users = tk.Frame(root)
+frame_delete_users.pack(side="bottom", fill="x")
+
+# Ajouter le bouton "Supprimer certains utilisateurs"
+delete_users_button = tk.Button(
+    frame_delete_users,
+    text="Supprimer certains utilisateurs",
+    command=delete_selected_users,
+    font=("Arial", 12),
+    bg="purple",
+    fg="white"
+)
+delete_users_button.pack(side="bottom", pady=10)
 
 # Lancer l'application
 root.mainloop()
