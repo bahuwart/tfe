@@ -4,12 +4,20 @@ import random
 import string
 import os
 
-# Variable de configuration pour déterminer le nombre d'adresses IP par groupe
-IP_CONFIG = {
-    "etudiants": 2,  # 2 adresses IP pour les étudiants
-    "professeurs": 1,  # 1 adresse IP pour les professeurs
-    # Ajoutez d'autres groupes si nécessaire
-}
+def load_config(config_file):
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(f"Le fichier de configuration '{config_file}' est introuvable.")
+    
+    with open(config_file, "r") as file:
+        return json.load(file)
+
+# Charger la configuration
+CONFIG_FILE = "C:\\tfe\\global_config.json"
+config = load_config(CONFIG_FILE)
+
+VM_NUMBERS = config["VM_NUMBERS"]
+EXCEL_FILE_PATH = config["EXCEL_FILE_PATH"]
+USERS_DATA_FILE = config["USER_DATA_FILE"]
 
 # Fonction pour générer un mot de passe aléatoire de 12 caractères
 def generate_password(length=12):
@@ -75,23 +83,59 @@ def ensure_unique_username(name, surname, existing_usernames):
     existing_usernames.add(modified_username)
     return modified_username
 
-# Chemin du fichier Excel
-file_path = "tfe.xlsx"
-json_file_path = "users_data.json"
 
 # Lire le fichier Excel
-data = pd.read_excel(file_path)
+data = pd.read_excel(EXCEL_FILE_PATH)
 
-# Charger les données JSON existantes
-existing_data = load_existing_data(json_file_path)
+existing_data = load_existing_data(USERS_DATA_FILE)
+
+# Extraire tous les usernames existants
 existing_usernames = {user["Username"] for user in existing_data}
-existing_full_names = {(user["Name"], user["Surname"]) for user in existing_data}
-used_ips = {user["IP_Address"] for user in existing_data}
 
-# Ajouter les deuxièmes IP si elles existent
-used_ips.update(user.get("IP_Address2", "") for user in existing_data if "IP_Address2" in user)
+# Extraire toutes les combinaisons "Name" et "Surname" existantes
+existing_full_names = {(user["Name"], user["Surname"]) for user in existing_data}
+
+# Extraire toutes les adresses IP utilisées
+used_ips = set()
+for user in existing_data:
+    # Parcourir toutes les clés et ajouter les adresses IP trouvées
+    used_ips.update(value for key, value in user.items() if key.startswith("IP_Address") and value)
+
 
 # Transformer les données
+transformed_data = existing_data.copy()
+
+# Vérifier et compléter les adresses IP si nécessaire
+def ensure_correct_ip_count(user, group, used_ips):
+    """Vérifie et ajoute les adresses IP manquantes pour un utilisateur."""
+    # Récupérer les adresses IP existantes
+    ip_addresses = [user[key] for key in user if key.startswith("IP_Address") and user[key]]
+    num_existing_ips = len(ip_addresses)
+
+    # Nombre d'adresses IP requis pour le groupe
+    num_required_ips = VM_NUMBERS.get(group.lower(), 1)
+
+    # Si le nombre d'IP existantes est inférieur à ce qui est requis, en ajouter
+    if num_existing_ips < num_required_ips:
+        for _ in range(num_required_ips - num_existing_ips):
+            new_ip = generate_ip_address(group, used_ips)
+            ip_addresses.append(new_ip)
+
+    # Mettre à jour les clés dans le dictionnaire utilisateur
+    for i, ip in enumerate(ip_addresses):
+        if i == 0:
+            user["IP_Address"] = ip  # La première IP reste sous la clé "IP_Address"
+        else:
+            user[f"IP_Address{i+1}"] = ip  # Les autres IP utilisent des clés IP_Address2, IP_Address3, etc.
+
+    return user
+
+# Vérifier les utilisateurs existants pour compléter leurs adresses IP
+for user in existing_data:
+    group = user["Group"]
+    ensure_correct_ip_count(user, group, used_ips)
+
+# Transformer les nouvelles données
 transformed_data = existing_data.copy()
 
 def transform_row(row):
@@ -109,7 +153,7 @@ def transform_row(row):
     ip_address = generate_ip_address(group, used_ips)
 
     # Nombre d'adresses IP à attribuer en fonction du groupe
-    num_ips = IP_CONFIG.get(group.lower(), 1)  # Par défaut, 1 adresse IP pour les groupes non spécifiés
+    num_ips = VM_NUMBERS.get(group.lower(), 1)  # Par défaut, 1 adresse IP pour les groupes non spécifiés
 
     # Générer des adresses IP supplémentaires si nécessaire
     ip_addresses = [ip_address]
@@ -123,7 +167,7 @@ def transform_row(row):
         "Group": group,
         "Username": username,
         "Password": generate_password(),
-        "IP_Address": ip_addresses[0]  # Toujours inclure la première IP
+        "IP_Address": ip_addresses[0]  # Toujours inclure la première IP sous "IP_Address"
     }
 
     # Ajouter les adresses IP supplémentaires si nécessaire
@@ -141,7 +185,8 @@ for _, row in data.iterrows():
         existing_full_names.add((new_user["Name"], new_user["Surname"]))
 
 # Sauvegarder les données dans un fichier JSON
-with open(json_file_path, "w") as json_file:
+with open(USERS_DATA_FILE, "w") as json_file:
     json.dump(transformed_data, json_file, indent=4)
 
 print("Données extraites et ajoutées dans users_data.json")
+

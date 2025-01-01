@@ -7,10 +7,10 @@ variable "admin_password" {
 type = string
 }
 
-resource "proxmox_vm_qemu" "mlavoine-VM20232" {
-    name        = "mlavoine-VM20232"
+resource "proxmox_vm_qemu" "mlavoine-VM20248" {
+    name        = "mlavoine-VM20248"
     desc        = "Ubuntu virtual machine of Marc Lavoine"
-    vmid        = "20232"
+    vmid        = "20248"
     target_node = "pve"
 
     agent   = 0
@@ -51,15 +51,15 @@ resource "proxmox_vm_qemu" "mlavoine-VM20232" {
     }
     ciuser = var.admin_login
     cipassword = var.admin_password
-    ipconfig0   = "ip=10.0.20.232/24,gw=10.0.20.1"
+    ipconfig0   = "ip=10.0.20.248/24,gw=10.0.20.1"
     vm_state = "running"
 }
 
 
-resource "proxmox_vm_qemu" "bhuwart-VM1023" {
-    name        = "bhuwart-VM1023"
+resource "proxmox_vm_qemu" "bhuwart-VM10213" {
+    name        = "bhuwart-VM10213"
     desc        = "Ubuntu virtual machine of Basil Huwart"
-    vmid        = "1023"
+    vmid        = "10213"
     target_node = "pve"
 
     agent   = 0
@@ -100,15 +100,15 @@ resource "proxmox_vm_qemu" "bhuwart-VM1023" {
     }
     ciuser = var.admin_login
     cipassword = var.admin_password
-    ipconfig0   = "ip=10.0.10.23/24,gw=10.0.10.1"
+    ipconfig0   = "ip=10.0.10.213/24,gw=10.0.10.1"
     vm_state = "running"
 }
 
 
-resource "proxmox_vm_qemu" "bhuwart-VM10241" {
-    name        = "bhuwart-VM10241"
+resource "proxmox_vm_qemu" "bhuwart-VM1087" {
+    name        = "bhuwart-VM1087"
     desc        = "Ubuntu virtual machine of Basil Huwart"
-    vmid        = "10241"
+    vmid        = "1087"
     target_node = "pve"
 
     agent   = 0
@@ -149,7 +149,7 @@ resource "proxmox_vm_qemu" "bhuwart-VM10241" {
     }
     ciuser = var.admin_login
     cipassword = var.admin_password
-    ipconfig0   = "ip=10.0.10.241/24,gw=10.0.10.1"
+    ipconfig0   = "ip=10.0.10.87/24,gw=10.0.10.1"
     vm_state = "running"
 }
 

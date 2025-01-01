@@ -1,16 +1,25 @@
 import json
 import paramiko
+import os
 
-# Informations de connexion SSH
-ANSIBLE_HOST = "172.16.1.30"  # Adresse IP ou hostname du serveur Ansible
-ANSIBLE_USER = "root"  # Utilisateur SSH
-ANSIBLE_PASSWORD = "password"  # Mot de passe SSH (ou utiliser une clé privée pour plus de sécurité)
-ANSIBLE_PATH = "/root/ansible-controller/inventory.ini"  # Chemin cible sur la machine distante
 
-# Chemin du fichier JSON avec les données des utilisateurs
-USER_DATA_FILE = "C:\\tfe\\users_data.json"  # Chemin du fichier JSON avec les données des utilisateurs
+def load_config(config_file):
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(f"Le fichier de configuration '{config_file}' est introuvable.")
+    
+    with open(config_file, "r") as file:
+        return json.load(file)
 
-import json
+# Charger la configuration
+CONFIG_FILE = "C:\\tfe\\global_config.json"
+config = load_config(CONFIG_FILE)
+
+# Extraire les constantes depuis la configuration
+ANSIBLE_HOST = config["ANSIBLE_HOST"]
+ANSIBLE_USER = config["ANSIBLE_USER"]
+ANSIBLE_PASSWORD = config["ANSIBLE_PASSWORD"]
+ANSIBLE_PATH = config["ANSIBLE_PATH"]
+USER_DATA_FILE = config["USER_DATA_FILE"] 
 
 def generate_inventory(USER_DATA_FILE):
     # Charger les données des utilisateurs depuis le fichier JSON
@@ -110,5 +119,3 @@ def execute_playbook(update_console):
 
     finally:
         ssh.close()  # Toujours fermer la connexion SSH
-
-update_inventory()

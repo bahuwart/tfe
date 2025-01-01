@@ -1,9 +1,24 @@
 import json
+import os
 
-# Charger le fichier JSON
+
+def load_config(config_file):
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(f"Le fichier de configuration '{config_file}' est introuvable.")
+    
+    with open(config_file, "r") as file:
+        return json.load(file)
+
+# Charger la configuration
+CONFIG_FILE = "C:\\tfe\\global_config.json"
+config = load_config(CONFIG_FILE)
+
+USERS_DATA_FILE = config["USER_DATA_FILE"]
+TERRAFORM_OUTPUT_FILE = config["TERRAFORM_OUTPUT_FILE"]
+
 def load_json(file_path):
-    with open(file_path, "r") as json_file:
-        return json.load(json_file)
+    with open(file_path, "r") as users:
+        return json.load(users)
 
 # Extraire les informations nécessaires d'un utilisateur
 def get_user_details(user):
@@ -110,15 +125,11 @@ type = string
                     tf_file.write(resource)
                     tf_file.write("\n")  # Séparation entre les ressources
 
-# Chemin vers le fichier JSON
-json_file = "users_data.json"
-output_tf_file = "deployement.tf"
-
 # Charger les données
 try:
-    data = load_json(json_file)
+    data = load_json(USERS_DATA_FILE)
     # Générer le fichier Terraform
-    generate_terraform_resources(data, output_tf_file)
-    print(f"Les ressources Terraform ont été générées dans le fichier {output_tf_file}")
+    generate_terraform_resources(data, TERRAFORM_OUTPUT_FILE)
+    print(f"Les ressources Terraform ont été générées dans le fichier {TERRAFORM_OUTPUT_FILE}")
 except Exception as e:
     print(f"Erreur : {e}")

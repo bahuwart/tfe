@@ -1,0 +1,20 @@
+{
+    "ANSIBLE_HOST" : "172.16.1.30",
+    "ANSIBLE_USER" : "root",
+    "ANSIBLE_PASSWORD" : "password",
+    "ANSIBLE_PATH" : "/root/ansible-controller/inventory.ini",
+    "USER_DATA_FILE" : "C:\\tfe\\users_data.json",
+    "IMPORT_XLSX_SCRIPT" : "C:\\tfe\\importXLSX.py",
+    "EXPORT_AD_SCRIPT" : "C:\\tfe\\exportAD.ps1",
+    "DELETE_FROM_AD_SCRIPT" : "C:\\tfe\\deleteFromAD.ps1",
+    "TERRAFORM_TEMPLATE_SCRIPT" : "C:\\tfe\\terraformTemplate.py",
+    "TERRAFORM_DIRECTORY" : "C:\\tfe",
+    "TERRAFORM_OUTPUT_FILE" : "C:\\tfe\\deployement.tf",
+    "OU_PATH" : "OU=utilisateurs,DC=TFE,DC=lab",
+    "AD_DOMAIN_NAME" : "tfe.lab",
+    "VM_NUMBERS" : {
+        "etudiants" : 3,
+        "professeurs" : 1
+    },
+    "EXCEL_FILE_PATH" : "C:\\tfe\\tfe.xlsx"
+}

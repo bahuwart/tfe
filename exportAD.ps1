@@ -1,9 +1,28 @@
 # Charger le module Active Directory
 Import-Module ActiveDirectory
 
+
+$configFile = "C:\tfe\global_config.json"
+
+# Vérifier si le fichier JSON existe
+if (-Not (Test-Path -Path $configFile)) {
+    Write-Host "Le fichier de configuration JSON est introuvable : $configFile"
+    exit 1
+}
+
+# Charger le fichier JSON
+$config = Get-Content -Path $configFile | ConvertFrom-Json
+
+# Extraire les valeurs nécessaires
+
+$OUPath = $config.OU_PATH
+$ADDomainName = $config.AD_DOMAIN_NAME
+$UsersDataPath = $config.USER_DATA_FILE
+
+
 # Lire le fichier JSON généré par Python
-$jsonPath = "C:\tfe\users_data.json"
-$jsonData = Get-Content -Path $jsonPath | ConvertFrom-Json
+$usersDataFile = $UsersDataPath
+$jsonData = Get-Content -Path $usersDataFile | ConvertFrom-Json
 
 # Fonction pour vérifier si un utilisateur existe dans AD
 function Test-UserExists {
@@ -40,7 +59,7 @@ foreach ($user in $jsonData) {
         # Créer un nouvel utilisateur dans Active Directory sans spécifier l'OU
         try {
             $newUser = New-ADUser -SamAccountName $username `
-                                   -UserPrincipalName "$username@tfe.lab" `
+                                   -UserPrincipalName "$username@$ADDomainName" `
                                    -DisplayName "$name $surname" `
                                    -GivenName $name `
                                    -Surname $surname `
@@ -53,7 +72,6 @@ foreach ($user in $jsonData) {
             Write-Host "Utilisateur $username créé avec succès." -ForegroundColor Green
 
             # Déplacer l'utilisateur vers l'OU souhaitée
-            $ouPath = "OU=utilisateurs,DC=TFE,DC=lab"
             Move-ADObject -Identity $newUser.DistinguishedName -TargetPath $ouPath
             Write-Host "Utilisateur $username déplacé vers l'OU utilisateur." -ForegroundColor Green
 

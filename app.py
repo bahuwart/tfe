@@ -2,14 +2,26 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import subprocess
 import os
-import ansibleIntegration  # Import du module contenant les fonctions Ansible
+import ansibleIntegration  
+import json
+
+def load_config(config_file):
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(f"Le fichier de configuration '{config_file}' est introuvable.")
+    
+    with open(config_file, "r") as file:
+        return json.load(file)
+
+# Charger la configuration
+CONFIG_FILE = "C:\\tfe\\global_config.json"
+config = load_config(CONFIG_FILE)
 
 # Chemins des scripts à exécuter
-IMPORT_XLSX_SCRIPT = "C:\\tfe\\importXLSX.py"
-EXPORT_AD_SCRIPT = "C:\\tfe\\exportAD.ps1"
-DELETE_FROM_AD_SCRIPT = "C:\\tfe\\deleteFromAD.ps1"
-TERRAFORM_TEMPLATE_SCRIPT = "C:\\tfe\\terraformTemplate.py"
-TERRAFORM_DIRECTORY = "C:\\tfe"  # Répertoire contenant les fichiers Terraform
+IMPORT_XLSX_SCRIPT = config["IMPORT_XLSX_SCRIPT"]
+EXPORT_AD_SCRIPT = config["EXPORT_AD_SCRIPT"]
+DELETE_FROM_AD_SCRIPT = config["DELETE_FROM_AD_SCRIPT"]
+TERRAFORM_TEMPLATE_SCRIPT = config["TERRAFORM_TEMPLATE_SCRIPT"]
+TERRAFORM_DIRECTORY = config["TERRAFORM_DIRECTORY"]  # Répertoire contenant les fichiers Terraform
 
 # Fonction pour exécuter un script et afficher les sorties en temps réel
 def execute_script(command):
