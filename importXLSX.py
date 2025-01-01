@@ -177,16 +177,15 @@ def transform_row(row):
 
     return user_data
 
-# Appliquer la transformation ligne par ligne
-for _, row in data.iterrows():
-    new_user = transform_row(row)
-    if new_user:  # Ajouter uniquement les nouveaux utilisateurs
-        transformed_data.append(new_user)
-        existing_full_names.add((new_user["Name"], new_user["Surname"]))
+def importData() : 
+    for _, row in data.iterrows():
+        new_user = transform_row(row)
+        if new_user:  # Ajouter uniquement les nouveaux utilisateurs
+            transformed_data.append(new_user)
+            existing_full_names.add((new_user["Name"], new_user["Surname"]))
 
-# Sauvegarder les données dans un fichier JSON
-with open(USERS_DATA_FILE, "w") as json_file:
-    json.dump(transformed_data, json_file, indent=4)
+    # Sauvegarder les données dans un fichier JSON
+    with open(USERS_DATA_FILE, "w") as json_file:
+        json.dump(transformed_data, json_file, indent=4)
 
-print("Données extraites et ajoutées dans users_data.json")
-
+    print("Données extraites et ajoutées dans users_data.json")

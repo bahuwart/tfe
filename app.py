@@ -2,8 +2,13 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import subprocess
 import os
-import ansibleIntegration  
+import ansibleIntegration
 import json
+import time
+from deleteFromXLSX import deleteUsers
+from terraformDestroyVMs import terraform_cleanup
+from terraformTemplate import terraformCreateTemplates
+from importXLSX import importData
 
 def load_config(config_file):
     if not os.path.exists(config_file):
@@ -17,13 +22,13 @@ CONFIG_FILE = "C:\\tfe\\global_config.json"
 config = load_config(CONFIG_FILE)
 
 # Chemins des scripts à exécuter
-IMPORT_XLSX_SCRIPT = config["IMPORT_XLSX_SCRIPT"]
 EXPORT_AD_SCRIPT = config["EXPORT_AD_SCRIPT"]
 DELETE_FROM_AD_SCRIPT = config["DELETE_FROM_AD_SCRIPT"]
-TERRAFORM_TEMPLATE_SCRIPT = config["TERRAFORM_TEMPLATE_SCRIPT"]
 APP_DIRECTORY = config["APP_DIRECTORY"]
 EXCEL_FILE_PATH = config["EXCEL_FILE_PATH"]
 DELETE_USERS_FILE = config["DELETE_USERS_FILE"]
+DELETE_SOME_FROM_AD_SCRIPT = config["DELETE_SOME_FROM_AD_SCRIPT"]
+USER_DATA_FILE = config["USER_DATA_FILE"]
 
 # Fonction pour exécuter un script et afficher les sorties en temps réel
 def execute_script(command):
@@ -48,6 +53,21 @@ def execute_script(command):
         return f"Error: {e}"
     return "Success"
 
+# Fonction pour exécuter l'import du fichier Excel et l'export dans AD
+def import_and_export_excel():
+    update_status("Import des utilisateurs depuis le fichier Excel...")
+    importData()
+    update_status("Les utilisateurs ont été importés depuis le fichier Excel.")
+
+    update_status("Import des utilisateurs dans l'AD...")
+    result = execute_script(f"powershell -ExecutionPolicy Bypass -File {EXPORT_AD_SCRIPT}")
+    if "Error" in result:
+        update_status("Échec de l'import des utilisateurs dans l'AD.")
+        messagebox.showerror("Erreur", f"Échec de exportAD.ps1 : {result}")
+        return
+    update_status("Les utilisateurs ont bien été importés dans l'AD.")
+    messagebox.showinfo("Succès", "Les utilisateurs ont été importés dans l'AD avec succès !")
+
 # Fonction pour exécuter le script deleteFromAD.ps1
 def delete_from_ad():
     update_status("Suppression des utilisateurs depuis l'AD...")
@@ -58,10 +78,18 @@ def delete_from_ad():
         return
     update_status("Les utilisateurs ont été supprimés avec succès depuis l'AD.")
     messagebox.showinfo("Succès", "Les utilisateurs ont été supprimés avec succès depuis l'AD !")
+    time.sleep(2)
+    try:
+        with open(USER_DATA_FILE, 'w') as f:
+            f.write('[]')
+        print(f"Le fichier {USER_DATA_FILE} a été vidé avec succès.")
+    except Exception as e:
+        print(f"Erreur lors du vidage du fichier JSON : {e}")
     terraform_destroy()
 
 # Fonction pour appliquer Terraform
 def terraform_apply():
+    terraformCreateTemplates()
     update_status("Lancement de la création des VM...")
     command = f"terraform apply -auto-approve"
     result = execute_script(f"cd {APP_DIRECTORY} && {command}")
@@ -72,7 +100,7 @@ def terraform_apply():
     update_status("Les VM ont été créées avec succès !")
     messagebox.showinfo("Succès", "Les VM ont été créées avec succès !")
 
-# Fonction pour appliquer Terraform
+# Fonction pour appliquer Terraform (destruction)
 def terraform_destroy():
     update_status("Suppression des VM...")
     command = f"terraform destroy -auto-approve"
@@ -83,36 +111,6 @@ def terraform_destroy():
         return
     update_status("Les VM ont été supprimées avec succès !")
     messagebox.showinfo("Succès", "Les VM ont été supprimées avec succès !")
-
-# Fonction principale pour gérer le workflow
-def process_workflow():
-    console_text.delete(1.0, tk.END)  # Réinitialiser la console
-
-    update_status("Import des utilisateurs depuis le fichier Excel...")
-    result = execute_script(f"python {IMPORT_XLSX_SCRIPT}")
-    if "Error" in result:
-        update_status("Échec de l'import des utilisateurs du fichier Excel.")
-        messagebox.showerror("Erreur", f"Échec de importXLSX.py : {result}")
-        return
-    update_status("Les utilisateurs ont été importés depuis le fichier Excel.")
-
-    update_status("Import des utilisateurs dans l'AD...")
-    result = execute_script(f"powershell -ExecutionPolicy Bypass -File {EXPORT_AD_SCRIPT}")
-    if "Error" in result:
-        update_status("Échec de l'import des utilisateurs dans l'AD.")
-        messagebox.showerror("Erreur", f"Échec de exportAD.ps1 : {result}")
-        return
-    update_status("Les utilisateurs ont bien été importés dans l'AD.")
-
-    update_status("Création des templates des VM des utilisateurs...")
-    result = execute_script(f"python {TERRAFORM_TEMPLATE_SCRIPT}")
-    if "Error" in result:
-        update_status("Échec de la création des templates.")
-        messagebox.showerror("Erreur", f"Échec de terraformTemplate.py : {result}")
-        return
-    update_status("Les templates ont été créés avec succès.")
-
-    update_status("Tous les scripts ont été exécutés avec succès.")
 
 # Fonction pour exécuter Ansible (update_inventory et execute_playbook)
 def run_ansible():
@@ -149,16 +147,12 @@ def select_file():
     if file_path:
         try:
             dest_path = EXCEL_FILE_PATH
-            
-            # Vérifier si le fichier existe déjà à cet emplacement et le supprimer si nécessaire
             if os.path.exists(dest_path):
                 os.remove(dest_path)
-            
-            # Déplacer et renommer le fichier
             os.replace(file_path, dest_path)
-            
             update_status(f"Fichier {os.path.basename(file_path)} ajouté et renommé en tfe.xlsx avec succès.")
-            process_workflow()
+            # Exécuter uniquement les deux scripts IMPORT_XLSX_SCRIPT et EXPORT_AD_SCRIPT
+            import_and_export_excel()
         except Exception as e:
             update_status("Erreur lors de l'ajout du fichier : " + str(e))
             messagebox.showerror("Erreur", f"Erreur lors de l'ajout du fichier : {str(e)}")
@@ -168,21 +162,35 @@ def delete_selected_users():
     if file_path:
         try:
             dest_path = DELETE_USERS_FILE
-            
-            # Vérifier si le fichier existe déjà à cet emplacement et le supprimer si nécessaire
             if os.path.exists(dest_path):
                 os.remove(dest_path)
-            
-            # Déplacer et renommer le fichier
             os.replace(file_path, dest_path)
-            
             update_status(f"Fichier {os.path.basename(file_path)} ajouté et renommé en delete.xlsx avec succès.")
-            process_workflow()
+            deleteUsers(dest_path, USER_DATA_FILE)
+            update_status("Suppression des utilisateurs dans l'AD...")
+            result = execute_script(f"powershell -ExecutionPolicy Bypass -File {DELETE_SOME_FROM_AD_SCRIPT}")
+            if "Error" in result:
+                update_status("Échec de la suppression des utilisateurs dans l'AD.")
+                messagebox.showerror("Erreur", f"Échec de deleteSomeFromAD.ps1 : {result}")
+                return
+            update_status("Les utilisateurs ont bien été supprimés de l'AD.")
+            messagebox.showinfo("Succès", "Les utilisateurs ont été supprimés de l'AD avec succès !")
+            time.sleep(2)
+            update_status("suppression des VMs...")
+            commands = terraform_cleanup(USER_DATA_FILE)
+            for command in commands :
+                result = execute_script(f"cd {APP_DIRECTORY} && {command}")
+                if "Error" in result:
+                    update_status("Échec de la suppression des VM.")
+                    messagebox.showerror("Erreur", f"Échec de terraform destroy : {result}")
+                    return
+                update_status("Les VM ont été supprimées avec succès !")
+                messagebox.showinfo("Succès", "Les VM ont été supprimées avec succès !")
+            
         except Exception as e:
             update_status("Erreur lors de l'ajout du fichier : " + str(e))
             messagebox.showerror("Erreur", f"Erreur lors de l'ajout du fichier : {str(e)}")
 
-            
 # Interface graphique principale
 root = tk.Tk()
 root.title("Gestion des Scripts")
@@ -223,7 +231,6 @@ ansible_button.pack(side="left", padx=5)
 delete_button = tk.Button(frame_buttons, text="Supprimer VM & utilisateurs", command=delete_from_ad, font=("Arial", 12), bg="blue", fg="white")
 delete_button.pack(side="right", padx=5)
 
-# Frame spécifique pour le bouton "Supprimer certains utilisateurs"
 frame_delete_users = tk.Frame(root)
 frame_delete_users.pack(side="bottom", fill="x")
 

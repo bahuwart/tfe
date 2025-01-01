@@ -129,11 +129,12 @@ type = string
                     tf_file.write(resource)
                     tf_file.write("\n")  # Séparation entre les ressources
 
-# Charger les données
-try:
-    data = load_json(USERS_DATA_FILE)
-    # Générer le fichier Terraform
-    generate_terraform_resources(data, TERRAFORM_OUTPUT_FILE)
-    print(f"Les ressources Terraform ont été générées dans le fichier {TERRAFORM_OUTPUT_FILE}")
-except Exception as e:
-    print(f"Erreur : {e}")
+
+def terraformCreateTemplates():
+    try:
+        data = load_json(USERS_DATA_FILE)
+        # Générer le fichier Terraform
+        generate_terraform_resources(data, TERRAFORM_OUTPUT_FILE)
+        print(f"Les ressources Terraform ont été générées dans le fichier {TERRAFORM_OUTPUT_FILE}")
+    except Exception as e:
+        print(f"Erreur : {e}")

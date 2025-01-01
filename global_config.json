@@ -4,17 +4,17 @@
     "ANSIBLE_PASSWORD" : "password",
     "ANSIBLE_PATH" : "/root/ansible-controller/inventory.ini",
     "USER_DATA_FILE" : "C:\\tfe\\users_data.json",
-    "IMPORT_XLSX_SCRIPT" : "C:\\tfe\\importXLSX.py",
     "EXPORT_AD_SCRIPT" : "C:\\tfe\\exportAD.ps1",
     "DELETE_FROM_AD_SCRIPT" : "C:\\tfe\\deleteFromAD.ps1",
-    "TERRAFORM_TEMPLATE_SCRIPT" : "C:\\tfe\\terraformTemplate.py",
+    "DELETE_SOME_FROM_AD_SCRIPT" : "C:\\tfe\\deleteSomeFromAD.ps1",
+    "DELETE_SOME_FROM_AD" : "C:\\tfe\\deleteSomeFromAD.ps1",
     "APP_DIRECTORY" : "C:\\tfe",
     "TERRAFORM_OUTPUT_FILE" : "C:\\tfe\\deployement.tf",
     "OU_PATH" : "OU=utilisateurs,DC=TFE,DC=lab",
     "AD_DOMAIN_NAME" : "tfe.lab",
     "VM_NUMBERS" : {
-        "etudiants" : 242,
-        "professeurs" : 1
+        "etudiants" : 1,
+        "professeurs" : 2
     },
     "EXCEL_FILE_PATH" : "C:\\tfe\\tfe.xlsx",
     "TEACHERS_TEMPLATE" : "linux-cloud2",
