@@ -1,23 +1,32 @@
 # Import the Active Directory module
 Import-Module ActiveDirectory
 
-# Variables
-$adminUser = "admin"  # Nom de l'utilisateur à exclure
+Import-Module ActiveDirectory
 
-# Supprimer les utilisateurs sauf l'utilisateur admin
-Write-Host "Suppression des utilisateurs sauf '$adminUser'..."
-Get-ADUser -Filter * -SearchBase "OU=utilisateurs,DC=tfe,DC=lab" | ForEach-Object {
-    if ($_.SamAccountName -ne $adminUser) {
-        Write-Host "Suppression de l'utilisateur : $($_.SamAccountName)" -ForegroundColor Yellow
-        Remove-ADUser -Identity $_.DistinguishedName -Confirm:$false
-    } else {
-        Write-Host "Utilisateur exclu : $adminUser" -ForegroundColor Green
-    }
+$configFile = "C:\tfe\global_config.json"
+
+# Vérifier si le fichier JSON existe
+if (-Not (Test-Path -Path $configFile)) {
+    Write-Host "Le fichier de configuration JSON est introuvable : $configFile"
+    exit 1
+}
+
+# Charger le fichier JSON
+$config = Get-Content -Path $configFile | ConvertFrom-Json
+
+# Extraire les valeurs nécessaires
+$OUPath = $config.OU_PATH
+
+# Supprimer tous les utilisateurs dans l'OU "utilisateurs"
+Write-Host "Suppression de tous les utilisateurs dans l'OU 'utilisateurs'..."
+Get-ADUser -Filter * -SearchBase $OUPath | ForEach-Object {
+    Write-Host "Suppression de l'utilisateur : $($_.SamAccountName)" -ForegroundColor Yellow
+    Remove-ADUser -Identity $_.DistinguishedName -Confirm:$false
 }
 
 # Supprimer tous les objets dans Computers
 Write-Host "Suppression des objets dans le conteneur Computers..."
-Get-ADComputer -Filter * -SearchBase "CN=Computers,DC=tfe,DC=lab" | ForEach-Object {
+Get-ADComputer -Filter * -SearchBase $OUPath | ForEach-Object {
     Write-Host "Suppression de l'ordinateur : $($_.Name)" -ForegroundColor Yellow
     Remove-ADComputer -Identity $_.DistinguishedName -Confirm:$false
 }

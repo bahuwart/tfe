@@ -1,0 +1,8 @@
+*.xlsx
+*.json
+*.tfvars
+*.hcl
+/.terraform
+/__pycache__
+*.backup
+*.tfstate

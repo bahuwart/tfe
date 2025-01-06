@@ -14,7 +14,7 @@
     "AD_DOMAIN_NAME" : "tfe.lab",
     "VM_NUMBERS" : {
         "etudiants" : 1,
-        "professeurs" : 2
+        "professeurs" : 1
     },
     "EXCEL_FILE_PATH" : "C:\\tfe\\tfe.xlsx",
     "TEACHERS_TEMPLATE" : "linux-cloud2",
