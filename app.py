@@ -10,6 +10,8 @@ from terraformDestroyVMs import terraform_cleanup
 from terraformTemplate import terraformCreateTemplates
 from importXLSX import importData
 
+# Version 1.0
+
 def load_config(config_file):
     if not os.path.exists(config_file):
         raise FileNotFoundError(f"Le fichier de configuration '{config_file}' est introuvable.")
