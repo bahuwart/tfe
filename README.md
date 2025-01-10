@@ -4,9 +4,9 @@
 Avant de télécharger les fichiers, il faut d'abord mettre en place l'infrastructure. Pour cela il faut 
 * un serveur Proxmox
 * un router avec 3 sous-réseaux
-    - le sous-réseau 172.16.1.0 pour le management
-    - le sous-réseau 10.0.10.0 pour les étudiants
-    - le sous-réseau 10.0.20 pour les professeurs
+    - le sous-réseau 172.16.1.0/24 pour le management
+    - le sous-réseau 10.0.10.0/24 pour les étudiants
+    - le sous-réseau 10.0.20.0/24 pour les professeurs
 * un Active Directory
 * un contoller Ansible
 
