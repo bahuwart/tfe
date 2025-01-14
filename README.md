@@ -13,7 +13,7 @@ Avant de télécharger les fichiers, il faut d'abord mettre en place l'infrastru
 ## Mise en place du projet
 
 Une fois que cela est fait, vous pouvez télécharger les fichiers sur votre DC qui servira de machine d'administration. les fichiers doivent être dans le même dossier.
-Seul le fichier Ansible doit être mit à part dans le répertoire de votre choix sur votre contoller Ansible.
+Seul le fichier playbook.yml doit être mit à part dans le répertoire de votre choix sur votre contoller Ansible.
 
 Veulliez aussi vérifier que le playbook Ansible a les configurations de votre choix et respecte la distribution Linux que vous aimeriez automatiser.
 
@@ -31,4 +31,4 @@ Ensuite il ne vous suffira plus que d'exécuter le fichier app.py pour configure
 
 ## Conseils d'utilisation du projet
 
-Si vous désirez que vos utilisateurs aient accès à votre insfrastructure à distance, il vous est conseillé d'installer un serveur VPN sur votre router pour permettre aux utilisateurs de s'y connecter à distance.
+Si vous désirez que vos utilisateurs aient accès à votre insfrastructure à distance, il vous faut installer un serveur VPN sur votre router pour permettre aux utilisateurs de s'y connecter à distance.
