@@ -15,7 +15,7 @@ $config = Get-Content -Path $configFile | ConvertFrom-Json
 
 # Extraire les valeurs nécessaires
 
-$OUPath = $config.OU_PATH
+$OUPath = $config.OU_USERS_PATH
 $ADDomainName = $config.AD_DOMAIN_NAME
 $UsersDataPath = $config.USER_DATA_FILE
 

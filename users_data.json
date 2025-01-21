@@ -1,1 +1,18 @@
-[]
+[
+    {
+        "Name": "Basil",
+        "Surname": "Huwart",
+        "Group": "etudiants",
+        "Username": "bhuwart",
+        "Password": "Y9?4Ag3HBYbT",
+        "IP_Address": "10.0.10.108"
+    },
+    {
+        "Name": "Patate",
+        "Surname": "Chaude",
+        "Group": "etudiants",
+        "Username": "pchaude",
+        "Password": "V?ayLP4jZ3Av",
+        "IP_Address": "10.0.10.155"
+    }
+]

@@ -8,3 +8,8 @@
 *.tfstate
 *.md
 *.yml
+inventory.ini
+credentials.auto.tfvars
+global_config.json
+users_data.json
+deployement.tf

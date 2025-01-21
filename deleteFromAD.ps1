@@ -15,7 +15,8 @@ if (-Not (Test-Path -Path $configFile)) {
 $config = Get-Content -Path $configFile | ConvertFrom-Json
 
 # Extraire les valeurs nécessaires
-$OUPath = $config.OU_PATH
+$OUPath = $config.OU_USERS_PATH
+$OUCPath = $config.OU_COMPUTERS_PATH
 
 # Supprimer tous les utilisateurs dans l'OU "utilisateurs"
 Write-Host "Suppression de tous les utilisateurs dans l'OU 'utilisateurs'..."
@@ -26,9 +27,9 @@ Get-ADUser -Filter * -SearchBase $OUPath | ForEach-Object {
 
 # Supprimer tous les objets dans Computers
 Write-Host "Suppression des objets dans le conteneur Computers..."
-Get-ADComputer -Filter * -SearchBase $OUPath | ForEach-Object {
+Get-ADComputer -Filter * -SearchBase $OUCPath | ForEach-Object {
     Write-Host "Suppression de l'ordinateur : $($_.Name)" -ForegroundColor Yellow
-    Remove-ADComputer -Identity $_.DistinguishedName -Confirm:$false
+    Remove-ADObject -Identity $_.DistinguishedName -Confirm:$false
 }
 
 Write-Host "Script terminé." -ForegroundColor Green
