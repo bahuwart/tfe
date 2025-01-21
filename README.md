@@ -21,6 +21,8 @@ Il faut installer Ansible sur votre controller Ansible et Terraform sur votre ma
 
 Il faut créer une OU où stocker vos utilisateurs et créer 2 groupes qu'il faut nommer etudiants et professeurs.
 
+Il faut aussi placer une fichier excel vide appelé tfe.xlsx dans votre dossier.
+
 Une fois que c'est fait vous devez remplir les fichiers global_config.json et credentials.auto.tfvars en conformité avec votre environnement de travail.
 
 Le fichier credentials.auto.tfvars contient les informations de votre hyperviseur Proxmox et le login/mdp du compte administrateur de vos VM automatisées.
