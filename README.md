@@ -51,4 +51,4 @@ Enfin les boutons "Supprimer VM & utilisteurs" et "Supprimer certains utilisateu
 
 ## Conseils d'utilisation du projet
 
-Si vous désirez que vos utilisateurs aient accès à votre insfrastructure à distance, il vous faut installer un serveur VPN sur votre router pour permettre aux utilisateurs de s'y connecter à distance.
+Si vous désirez que vos utilisateurs aient accès à votre insfrastructure, il vous faut installer un serveur VPN sur votre router pour permettre aux utilisateurs de s'y connecter à distance.
