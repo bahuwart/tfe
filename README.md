@@ -50,7 +50,7 @@ Le second, le bouton nommé "Lancer la création des VM", permet comme son nom l
 
 Le troisième, nommé "Lancer la configuration des VM", permet de configurer les VM et de les ajouter à l'AD.
 
-Enfin les boutons "Supprimer VM & utilisteurs" et "Supprimer certains utilisateurs" permettent de soit supprimer toutes les VM et tous les utilisateurs dans le premier cas, ou dans le second cas de donner un fichier excel semblable au premier fichier excel du bouton "Sélectionner un fichier" mais seulement avec les informations des utilisateurs que l'on veut supprimer. 
+Enfin les boutons "Supprimer VM & utilisteurs" et "Supprimer certains utilisateurs & VM" permettent de soit supprimer toutes les VM et tous les utilisateurs dans le premier cas, ou dans le second cas de donner un fichier excel semblable au premier fichier excel du bouton "Sélectionner un fichier" mais seulement avec les informations des utilisateurs que l'on veut supprimer. 
 
 
 ## Conseils d'utilisation du projet
