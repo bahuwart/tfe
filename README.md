@@ -37,7 +37,7 @@ Pour ce faire, il faut exécuter le fichier app.py. Si tout fonctionne, vous dev
 
 ![Capture d'écran 2025-01-21 150351](https://github.com/user-attachments/assets/acf94f16-8c54-4dd3-b973-22dad69e3935)
 
-Dans cette fenêtre se trouvent 6 boutouns.
+Dans cette fenêtre se trouvent 6 boutons.
 
 Le premier, celui nommé "Sélectionner un fichier" permet d'ajouter un fichier excel avec les champs Name, Surname et Group des utilisateurs.
 les utilisateurs inscrits dans ce fichier seront automatiquement ajoutés à l'AD.
