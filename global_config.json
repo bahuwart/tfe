@@ -1,0 +1,23 @@
+{
+    "ANSIBLE_HOST" : "",
+    "ANSIBLE_USER" : "",
+    "ANSIBLE_PASSWORD" : "",
+    "ANSIBLE_PATH" : "",
+    "USER_DATA_FILE" : "",
+    "EXPORT_AD_SCRIPT" : "",
+    "DELETE_FROM_AD_SCRIPT" : "",
+    "DELETE_SOME_FROM_AD_SCRIPT" : "",
+    "DELETE_SOME_FROM_AD" : "",
+    "APP_DIRECTORY" : "",
+    "TERRAFORM_OUTPUT_FILE" : "",
+    "OU_PATH" : "",
+    "AD_DOMAIN_NAME" : "",
+    "VM_NUMBERS" : {
+        "etudiants" : 1,
+        "professeurs" : 1
+    },
+    "EXCEL_FILE_PATH" : "",
+    "TEACHERS_TEMPLATE" : "",
+    "STUDENTS_TEMPLATE" : "",
+    "DELETE_USERS_FILE" : ""
+}

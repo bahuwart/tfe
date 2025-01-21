@@ -1,0 +1,82 @@
+---
+- name: Playbook pour rejoindre un domaine et configurer PAM
+  hosts: all
+  become: yes
+  vars:
+    admin_password: ""
+    ad_nameserver: ""
+
+  tasks:
+    - name: Mettre a jour les paquets
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Replace nameserver IP in netplan config
+      lineinfile:
+        path: /etc/netplan/50-cloud-init.yaml
+        regexp: '^\s*- 192\.168\.1\.1$'
+        line: '                - 172.16.1.10'
+        backrefs: yes
+        state: present
+
+    - name: Appliquer la nouvelle configuration Netplan
+      shell: sudo netplan apply
+
+    - name: Installer le paquet realmd
+      apt:
+        name: realmd
+        state: present
+
+    - name: Verifier si la machine est deja jointe au domaine
+      shell: realm list | grep -iq 'tfe.lab'
+      register: realm_status
+      ignore_errors: true
+      changed_when: false
+      no_log: true
+
+    - name: Joindre le domaine tfe.lab
+      shell: echo "{{ admin_password }}" | sudo realm join -U administrator tfe.lab
+      when: realm_status.rc != 0
+
+    - name: Verifier si mkhomedir est deja active pour PAM
+      shell: grep -q "mkhomedir" /etc/pam.d/common-session
+      register: mkhomedir_check
+      failed_when: mkhomedir_check.rc != 0 and mkhomedir_check.stdout != ''
+      changed_when: false
+
+    - name: Activer mkhomedir pour PAM
+      command: sudo pam-auth-update --enable mkhomedir
+      no_log: true
+      when: mkhomedir_check.rc != 0
+
+    - name: Recuperer le nom d'utilisateur depuis l'inventaire
+      set_fact:
+        username: "{{ hostvars[inventory_hostname].username }}"
+
+    - name: Verifier si les lignes sont deja presentes dans /etc/sssd/sssd.conf
+      shell: |
+        grep -q "access_provider = simple" /etc/sssd/sssd.conf && \
+        grep -q "simple_allow_users = {{ username }}" /etc/sssd/sssd.conf
+      register: sssd_config_check
+      ignore_errors: true
+      changed_when: false
+
+    - name: Ajouter la ligne access_provider a la fin de /etc/sssd/sssd.conf si elle n'est pas presente
+      lineinfile:
+        path: /etc/sssd/sssd.conf
+        line: "access_provider = simple"
+        insertafter: EOF
+      when: sssd_config_check.rc != 0
+
+    - name: Ajouter le simple_allow_users a la fin de /etc/sssd/sssd.conf si elle n'est pas presente
+      lineinfile:
+        path: /etc/sssd/sssd.conf
+        line: "simple_allow_users = {{ username }}"
+        insertafter: EOF
+      when: sssd_config_check.rc != 0
+
+    - name: Redemarrer le service sssd
+      service:
+        name: sssd
+        state: restarted
