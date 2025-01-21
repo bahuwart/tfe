@@ -5,6 +5,7 @@ import os
 import ansibleIntegration
 import json
 import time
+import pandas as pd
 from deleteFromXLSX import deleteUsers
 from terraformDestroyVMs import terraform_cleanup
 from terraformTemplate import terraformCreateTemplates
@@ -58,7 +59,7 @@ def execute_script(command):
 # Fonction pour exécuter l'import du fichier Excel et l'export dans AD
 def import_and_export_excel():
     update_status("Import des utilisateurs depuis le fichier Excel...")
-    importData()
+    importData(pd.read_excel(EXCEL_FILE_PATH))
     update_status("Les utilisateurs ont été importés depuis le fichier Excel.")
 
     update_status("Import des utilisateurs dans l'AD...")
@@ -239,7 +240,7 @@ frame_delete_users.pack(side="bottom", fill="x")
 # Ajouter le bouton "Supprimer certains utilisateurs"
 delete_users_button = tk.Button(
     frame_delete_users,
-    text="Supprimer certains utilisateurs",
+    text="Supprimer certains utilisateurs & VM",
     command=delete_selected_users,
     font=("Arial", 12),
     bg="purple",

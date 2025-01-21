@@ -1,4 +1,3 @@
-import pandas as pd
 import json
 import random
 import string
@@ -82,10 +81,6 @@ def ensure_unique_username(name, surname, existing_usernames):
 
     existing_usernames.add(modified_username)
     return modified_username
-
-
-# Lire le fichier Excel
-data = pd.read_excel(EXCEL_FILE_PATH)
 
 existing_data = load_existing_data(USERS_DATA_FILE)
 
@@ -177,7 +172,7 @@ def transform_row(row):
 
     return user_data
 
-def importData() : 
+def importData(data) : 
     for _, row in data.iterrows():
         new_user = transform_row(row)
         if new_user:  # Ajouter uniquement les nouveaux utilisateurs
